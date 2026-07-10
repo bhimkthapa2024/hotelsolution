@@ -1,0 +1,55 @@
+runConfig:
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 2
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyBd4WnIHTMwasp_xAeJkd0B7ltqkTvWB2U
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: hotel-mgmt-68a60.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: hotel-mgmt-68a60
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: hotel-mgmt-68a60.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "630485674448"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:630485674448:web:07b3980c26cd191907b1d5"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: FIREBASE_PROJECT_ID
+    value: "hotel-mgmt-68a60"
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: "firebase-adminsdk-fbsvc@hotel-mgmt-68a60.iam.gserviceaccount.com"
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_PRIVATE_KEY
+    value: "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDkXMxXr6XEEPtr\nIAyhSYhNkv79OWHn0AjAR/fMNVhyAEUYgXWkOmHYIztv2JHIcJL01YXnCLI20X+x\nxSl/F8FCSlWhye4ULHc7E5WSbHkktddi4GbbdkvlCkWy/zcysm4kO+RIZkpBEQjb\nuYkIQhZGBsjqJ/qYBuWSbJ7UyDuNqhgfy3slCQuNJEMXWQu6zFpv1ErpShNGXU5j\nIOqcqmYCDKizqosckSvcgs9hopM3bBu1UiMACd0eoK134yOFsguam5RxmaXtocWx\n0QMIIwEW6q9xBds5ahFY7s+xNt8J66eYnikAtbzsPIbPYW/tP2wuYzSX+KoxejCz\nfbJWplYfAgMBAAECggEAF8VpJ/+Ku9wgr8gISInE/H4+uNFOVbkcEBftvX4YFNXe\nW2yueEfzg3I3b68Vjc3aHk5Tv/bxxi8Moc6qQSaR4Xqna03/0G3Ig4fIXBOakK21\nG//L9TBdOhxVoQpcDpTwTilF3Bt5w0goqeaoUwm+E9AE/grnVQfywck4x2GIgXhu\n7bUa5dylPVajRCupVoI1ycnPMXPjwMUsePS7qbrJKeTBdcUXnrAExxvDcavZkrAf\nXETh0bKztoi2CX1pDwvOTEqbcrdk3XQDz/cSelpCDOcoez73YHR4LCZ75Y6q8nxB\nOH+F3JPKyZO0FBkN1KYe0GxLV1knpgSw0Y49DD3PoQKBgQD2WsMh3w13WXWOWbof\n3sZBEtzyMmkGcepavK6UwjOFdeEER5ui8L+yUbyQqRUVsPWIuAs+TfAMk2ZcY5ag\nyvA7tqKZ0XeQVRqbDiglaK/mjBxjbIpWkaOxUwjfV14GjxFtQyF2XgukYGG3iTTm\nOoUIIT/Yf8/PV50ez2FiX6ilKQKBgQDtTbMkjRLNsRkH8TilFGeBKL7fAkPY8dWY\n+7wWauvZPfhU2RZI66m3t6J/9jJBnTcUNogvRmH2Beu3cRVAl5nCYKyC8a6r0RVq\nlXEWAgoXfyCmvUePLyxYpQ6woX/3SF90eG7f9m9HjVZbZwECxF3yoN9fQouCi/KU\nBVGTfjOCBwKBgQC07cvKIIs/UFBqD7QGnBJ20Ge86REBTsCTi2eckVRNfFmaTw0b\nCj1/tVAL3mJB4Ak0NBbt10eptMfEqs+BoAn3kRayaYiqVBaKMkeB0fT+GYDv9FNV\naPkTzqwBe6TupDxkRp1Y1ZEvVCnwJbDYNbpmUiUV2CjDWtFmQ2B+Y0r0oQKBgQC4\nUocYl/+IB8xyj9q41v2CpHyFykObClUoDDjPjON/DZSLi0e1AmAElL3C+R+WOaCj\nsavcVKYYrAaoqUyhrF/BTMgSudk8Gh6xeDyrpI/kKlnZSeKAhFrEzAh6CCfWkr+a\nP0WX7toG0PDH9F0johV7NZvraUvl7gBRG0R+9SLbFwKBgQDWXfTI3mI89zVVdmbW\nQ5oirnAmWF0axFF9X5ageSCExAXLSAp3khvze3vum21xHr2wqc4cdhTd/3+3OiyM\nR4PNkk26pDLDgUXpANXktIUi3ZhZ8hXcT4wLuTS/b1qce2y2h+pXDGJWC+ManA/f\n7920/qcEYy2ghSOYfguLhBFtPQ==\n-----END PRIVATE KEY-----"
+    availability:
+      - RUNTIME
