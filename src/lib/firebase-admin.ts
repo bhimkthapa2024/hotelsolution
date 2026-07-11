@@ -7,13 +7,23 @@ if (!admin.apps.length) {
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
   if (projectId && clientEmail && privateKey) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey: privateKey.replace(/\\n/g, '\n'),
-      }),
-    });
+    try {
+      // Handle both literal '\\n' and actual newlines
+      const formattedKey = privateKey.includes('\\n') 
+        ? privateKey.replace(/\\n/g, '\n') 
+        : privateKey;
+        
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          clientEmail,
+          privateKey: formattedKey,
+        }),
+      });
+      console.log('[firebase-admin] Successfully initialized.');
+    } catch (error) {
+      console.error('[firebase-admin] Failed to initialize:', error);
+    }
   } else {
     // Stub for local dev without credentials
     console.warn('[firebase-admin] Missing credentials — running in stub mode.');
