@@ -7,7 +7,7 @@ import { clientAuth } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck, ArrowRight, Lock, Loader2,
-  Building2, CheckCircle2, Clock, Eye, EyeOff, Sparkles, Mail,
+  Building2, CheckCircle2, Clock, Eye, EyeOff, Sparkles, Mail, User
 } from 'lucide-react';
 
 type Tab = 'login' | 'signup';
