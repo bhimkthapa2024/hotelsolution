@@ -31,11 +31,11 @@ async function enforceAuth() {
 const mapModeToAccount = (mode: string, cfg?: any) => {
   if (cfg?.paymentModes) {
     const mapped = cfg.paymentModes.find((pm: any) => pm.label?.toUpperCase() === mode?.toUpperCase().trim());
-    if (mapped?.accountId) return mapped.accountId;
+    if (mapped?.accountId || mapped?.account) return mapped.accountId || mapped.account;
   }
   const m = (mode || '').toUpperCase().trim();
   if (m === 'CASH') return 'Petty Cash / House Bank';
-  if (['CARD HBL', 'HIMALAYAN BANK', 'HBL', 'FONEPAY KSBBL', 'KSBBL', 'BANK', 'CHEQUE', 'E-BANKING'].includes(m)) return 'Main Operational Bank';
+  if (['CARD HBL', 'HIMALAYAN BANK', 'HBL', 'CREDIT CARD HBL', 'FONEPAY KSBBL', 'KSBBL', 'BANK', 'CHEQUE', 'E-BANKING'].includes(m)) return 'Main Operational Bank';
   if (['PAYABLE', 'CITY LEDGER', 'BILL TO COMPANY'].includes(m)) return 'Accounts Receivable';
   return mode;
 };
