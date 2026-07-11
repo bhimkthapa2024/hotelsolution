@@ -10,7 +10,6 @@ import {
   FilePlus,
   ShoppingBasket,
   Receipt,
-  BedDouble,
   BarChart3,
   FileText,
   Settings,
@@ -50,7 +49,6 @@ const navItems: SidebarItem[] = [
   { label: 'Purchase Entry', href: '/purchase', icon: ShoppingBasket, permission: 'setup.manage' },
   { label: 'Finance Entry', href: '/finance', icon: ArrowRightLeft, permission: 'setup.manage' },
   { label: 'Guest Folio', href: '/guest-folio', icon: Receipt, permission: 'housekeeping.view' },
-  { label: 'Housekeeping', href: '/housekeeping', icon: BedDouble, permission: 'housekeeping.view' },
   { separator: 'FINANCIAL REPORTS' },
   { label: 'Fin. Reports', href: '/reports', icon: BarChart3, permission: 'reports.view', subItems: [
       { label: 'Trial Balance', href: '/reports?tab=TRIAL_BALANCE' },
@@ -63,7 +61,6 @@ const navItems: SidebarItem[] = [
       { label: 'Sundry Creditors', href: '/reports?tab=SUNDRY_CREDITORS' },
       { label: 'Folio & Room Analytics', href: '/reports?tab=SALES_CONTRIBUTION' },
   ] },
-  { label: 'HK Audit', href: '/hk-audit', icon: History, permission: 'housekeeping.audit' },
   { label: 'Sales Report', href: '/sales-report', icon: FileText, permission: 'reports.view' },
   { label: 'Purchase Report', href: '/purchase-report', icon: FileText, permission: 'reports.view' },
   { separator: 'MASTER SETUP' },

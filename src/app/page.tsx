@@ -4,7 +4,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
-  BedDouble, 
   Activity, 
   PieChart, 
   ArrowUpRight,
@@ -61,7 +60,7 @@ export default function Dashboard() {
 
   if (!data) return <DashboardSkeleton />;
 
-  const { rooms, accounts, config } = data;
+  const { accounts, config } = data;
   const totalRev = accounts.filter(a => a.type === 'REVENUE').reduce((s, a) => s + a.balance, 0);
   const totalExp = accounts.filter(a => a.type === 'EXPENSE').reduce((s, a) => s + a.balance, 0);
   const totalCash = accounts.filter(a => a.name.toLowerCase().includes('cash') || a.name.toLowerCase().includes('bank')).reduce((s, a) => s + a.balance, 0);
@@ -197,40 +196,7 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-12 gap-2 sm:gap-4 mt-4">
-         <motion.div 
-            variants={item} 
-            onClick={() => router.push('/housekeeping')}
-            className="col-span-12 lg:col-span-3 bg-white p-4 rounded-[var(--radius-md)] text-white overflow-hidden relative group cursor-pointer shadow-xl border border-slate-900"
-          >
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-all transition-transform">
-               <BedDouble className="w-12 h-12" />
-            </div>
-            <p className="text-[0.35rem] font-black uppercase tracking-widest text-slate-500 mb-2 leading-none">Inventory Readiness</p>
-            <h4 className="text-[1.8rem] font-black tracking-tighter mb-1 leading-none italic">{rooms.filter(r => r.status === 'Ready').length} Units</h4>
-            <div className="flex items-center gap-1.5">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-               <p className="text-[0.55rem] font-black uppercase text-slate-400 tracking-widest">Available for Folio</p>
-            </div>
-         </motion.div>
-         
-         <motion.div variants={item} className="col-span-12 lg:col-span-9 bg-white border border-slate-200 p-4 rounded-[var(--radius-md)] flex items-center justify-between shadow-sm relative overflow-hidden group">
-            <div className="flex items-center gap-4 relative z-10">
-               <div className="w-10 h-10 bg-emerald-50 rounded-[var(--radius-sm)] flex items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
-                  <TrendingUp className="w-5 h-5" />
-               </div>
-               <div>
-                  <h4 className="text-[0.6rem] font-normal text-slate-950 uppercase  mb-1">Performance Momentum Matrix</h4>
-                  <p className="text-slate-400 font-black text-[0.55rem] uppercase tracking-widest opacity-80 leading-relaxed max-w-[550px]">Property yield vector remains positive. sustained asset utilization across all operational tiers detected.</p>
-               </div>
-            </div>
-            <div className="flex gap-2">
-               <button onClick={() => router.push('/reports')} className="h-9 px-4 bg-slate-50 text-slate-900 border border-slate-200 font-black text-[0.55rem] rounded-[var(--radius-sm)] hover:bg-white hover:text-white transition-all uppercase tracking-widest flex items-center gap-2">
-                  Analytics <ArrowRight className="w-3 h-3" />
-               </button>
-            </div>
-         </motion.div>
-      </div>
+
       
       <div className="mt-4 flex justify-between items-center text-[0.35rem] font-black text-slate-300 uppercase tracking-widest px-1 pointer-events-none italic opacity-50">
          <span>Institutional Core v2.94-Alpha</span>

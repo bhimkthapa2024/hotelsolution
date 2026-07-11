@@ -873,7 +873,7 @@ export default function SalesClient({
          {/* STEP 1: GUEST REGISTRY */}
          {currentStep === 1 && (
             <div className="max-w-4xl mx-auto space-y-4 animate-fadeIn">
-               <section className="bg-white rounded border border-slate-200 relative overflow-hidden group">
+               <section className="bg-white rounded border border-slate-200 relative overflow-visible group">
                   <div className="px-4 pt-4 pb-2 flex items-center gap-2">
                       <User className="w-4 h-4 text-indigo-400" />
                   </div>
@@ -973,7 +973,7 @@ export default function SalesClient({
                                    onChange={(val) => setForm({ ...form, plan: val })}
                                    options={config?.stayPlans?.map((p: any) => ({ label: p.label, value: p.id })) || []}
                                    placeholder="-- SELECT --"
-                                   className="bg-transparent text-sm text-slate-900 uppercase w-full"
+                                   className="bg-transparent text-sm text-slate-900 w-full"
                                 />
                              </div>
                           </div>
@@ -1017,7 +1017,7 @@ export default function SalesClient({
                      </button>
                   </div>
 
-                  <div className="overflow-x-auto w-full">
+                  <div className="overflow-visible w-full">
                       <table className="w-full text-left border-collapse min-w-full">
                          <thead className="bg-white border-b border-slate-200 shadow-sm z-10 relative">
                             <tr>
@@ -1200,7 +1200,7 @@ export default function SalesClient({
          {/* STEP 3: FINANCIAL SETTLEMENT & SPLITS */}
          {currentStep === 3 && (
             <div className="max-w-4xl mx-auto space-y-4 animate-fadeIn">
-               <section className="bg-white p-4 rounded border border-slate-200 relative overflow-hidden group">
+               <section className="bg-white p-4 rounded border border-slate-200 relative overflow-visible group">
                   <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                      <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-indigo-400" />
@@ -1382,7 +1382,7 @@ export default function SalesClient({
          {/* STEP 4: HIGH-FIDELITY TRANSACTION REVIEW */}
          {currentStep === 4 && (
             <div className="max-w-4xl mx-auto space-y-4 animate-fadeIn">
-               <section className="bg-white rounded border border-slate-200 relative overflow-hidden p-4">
+               <section className="bg-white rounded border border-slate-200 relative overflow-visible p-4">
                   {/* Aura element */}
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-20 translate-x-20 pointer-events-none" />
                   
@@ -1458,7 +1458,7 @@ export default function SalesClient({
                   {/* Revenue Stack table */}
                   <div className="space-y-3 mb-6 text-left">
                      <span className="text-[0.55rem] font-black text-slate-500 uppercase tracking-widest block mb-2">Revenue Itemized Statement</span>
-                     <div className="border border-slate-200 rounded overflow-x-auto">
+                     <div className="border border-slate-200 rounded overflow-visible">
                         <table className="w-full text-left border-collapse text-[0.6rem] uppercase tracking-tight min-w-[600px]">
                            <thead>
                               <tr className="bg-slate-50 border-b border-slate-200 text-[0.55rem] font-black text-slate-500 tracking-widest">

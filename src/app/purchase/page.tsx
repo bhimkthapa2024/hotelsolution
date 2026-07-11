@@ -498,7 +498,7 @@ export default function PurchaseEntry() {
                  </div>
               </div>
 
-              <div className="p-0 overflow-x-auto">
+              <div className="p-0 overflow-visible">
                   <table className="w-full text-left border-collapse text-[0.6rem] uppercase tracking-tight min-w-[800px]">
                      <thead>
                         <tr className="bg-slate-50 border-b border-slate-200 text-[0.55rem] font-black text-slate-500 tracking-widest text-left">

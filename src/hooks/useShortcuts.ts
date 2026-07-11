@@ -23,10 +23,6 @@ export function useShortcuts() {
             e.preventDefault();
             router.push('/day-book');
             break;
-          case 'h':
-            e.preventDefault();
-            router.push('/housekeeping');
-            break;
           case 'r':
             e.preventDefault();
             router.push('/reports');

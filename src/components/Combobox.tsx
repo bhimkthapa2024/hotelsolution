@@ -119,7 +119,7 @@ export default function Combobox({ value, onChange, options, placeholder, classN
           type="text"
           value={search}
           onChange={(e) => {
-             setSearch(e.target.value.toUpperCase());
+             setSearch(e.target.value);
              setIsOpen(true);
           }}
           onClick={() => setIsOpen(true)}
@@ -128,7 +128,7 @@ export default function Combobox({ value, onChange, options, placeholder, classN
             setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || "SEARCH..."}
+          placeholder={placeholder || "Search..."}
           disabled={disabled}
           autoFocus={autoFocus}
           className={cn("w-full outline-none pr-6", className)}
@@ -156,7 +156,7 @@ export default function Combobox({ value, onChange, options, placeholder, classN
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "absolute top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-[var(--radius-sm)] shadow-2xl z-[99999] max-h-[250px] overflow-y-auto py-1 scrollbar-hide",
+              "absolute top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-[var(--radius-md)] shadow-2xl z-[99999] max-h-[300px] overflow-y-auto p-1 scrollbar-thin",
               dropdownClassName
             )}
           >
@@ -171,9 +171,9 @@ export default function Combobox({ value, onChange, options, placeholder, classN
                    setIsOpen(false);
                  }}
                  className={cn(
-                   "w-full text-left px-3 py-2 text-[0.6rem] font-black uppercase tracking-widest transition-colors flex items-center justify-between group",
-                   highlightedIndex === idx ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600",
-                   value === opt.value && "font-extrabold"
+                   "w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between group rounded-[var(--radius-sm)] mb-0.5",
+                   highlightedIndex === idx ? "bg-indigo-50 text-indigo-700" : "text-slate-700 hover:bg-slate-50 hover:text-indigo-600",
+                   value === opt.value && "font-semibold text-indigo-700"
                  )}
                >
                  <span className="pr-2 whitespace-normal break-words leading-relaxed">{opt.label}</span>

@@ -3,11 +3,9 @@
 import { useState, useEffect } from 'react';
 import { login, registerUser } from '@/actions/auth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { clientAuth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import {
-  ShieldCheck, ArrowRight, Lock, Mail, User, Loader2,
-  Building2, CheckCircle2, Clock, Eye, EyeOff, Sparkles,
+  ShieldCheck, ArrowRight, Lock, User, Loader2,
+  Building2, CheckCircle2, Clock, Eye, EyeOff, Sparkles, Mail,
 } from 'lucide-react';
 
 type Tab = 'login' | 'signup';
@@ -39,13 +37,11 @@ export default function LoginPage() {
   const [tab, setTab] = useState<Tab>('login');
 
   // Login state
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
-  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Signup state
   const [sFullName, setSFullName] = useState('');
@@ -71,44 +67,16 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const cred = await signInWithEmailAndPassword(clientAuth, email, password);
-      if (!cred.user.emailVerified) {
-        setUnverifiedUser(cred.user);
-        setError('Your email is not verified. Please check your inbox.');
-        setLoading(false);
-        return;
-      }
-      const idToken = await cred.user.getIdToken();
-      const res = await login(idToken);
+      const res = await login(username.trim(), password);
       if (res.success) {
         window.location.href = '/';
       } else {
-        const msg = res.error || 'Authentication failed';
-        if (msg.includes('PENDING_APPROVAL')) {
-          setError('PENDING_APPROVAL');
-        } else {
-          setError(msg);
-        }
+        setError(res.error || 'Authentication failed');
         setLoading(false);
       }
     } catch (err: any) {
-      const code = err?.code || '';
-      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-        setError('Invalid email or password. Please try again.');
-      } else {
-        setError(err?.message || 'Connection error. Please retry.');
-      }
+      setError(err?.message || 'Connection error. Please retry.');
       setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    if (!unverifiedUser) return;
-    try {
-      await sendEmailVerification(unverifiedUser);
-      setResendSuccess(true);
-    } catch (err: any) {
-      setError('Failed to resend: ' + err.message);
     }
   };
 
@@ -210,20 +178,20 @@ export default function LoginPage() {
               >
                 <form onSubmit={handleLogin} className="login-form">
 
-                  {/* Email */}
+                  {/* Username */}
                   <div className="lf-group">
-                    <label className="lf-label">Email Address</label>
+                    <label className="lf-label">Username</label>
                     <div className="lf-input-wrap">
-                      <Mail size={16} className="lf-icon" />
+                      <User size={16} className="lf-icon" />
                       <input
-                        id="login-email"
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        id="login-username"
+                        type="text"
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
                         required
                         className="lf-input"
-                        placeholder="your@email.com"
-                        autoComplete="email"
+                        placeholder="Enter your username"
+                        autoComplete="username"
                       />
                     </div>
                   </div>
@@ -256,24 +224,9 @@ export default function LoginPage() {
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className={`lf-alert ${error === 'PENDING_APPROVAL' ? 'lf-alert-warn' : 'lf-alert-err'}`}
+                        className="lf-alert lf-alert-err"
                       >
-                        {error === 'PENDING_APPROVAL' ? (
-                          <div className="flex items-center gap-2">
-                            <Clock size={15} className="shrink-0 text-amber-400" />
-                            <span>Your account is awaiting admin approval{dots}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <span>{error}</span>
-                            {unverifiedUser && !resendSuccess && (
-                              <button type="button" onClick={handleResend} className="lf-resend-btn">
-                                Resend Verification Email
-                              </button>
-                            )}
-                            {resendSuccess && <span className="text-emerald-400 text-xs mt-1">✓ Verification email sent!</span>}
-                          </>
-                        )}
+                        <span>{error}</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -704,7 +657,7 @@ export default function LoginPage() {
         .lf-label {
           font-size: 0.8rem;
           font-weight: 700;
-          color: rgba(148,163,184,0.9);
+          color: #000000;
           letter-spacing: 0.06em;
           text-transform: uppercase;
         }
