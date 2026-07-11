@@ -2,53 +2,72 @@
 
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import { validateRequest, enforcePermission } from '@/lib/session';
+import { validateRequest, enforcePermission, SESSION_COOKIE_NAME } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { serialize } from '@/lib/utils';
 import { cache } from 'react';
-import { lucia } from '@/lib/auth';
+import { adminAuth } from '@/lib/firebase-admin';
 import { db } from '@/lib/db';
 import {
   users, roles, permissions, userRoles, rolePermissions,
 } from '@/drizzle/schema';
-import { eq, inArray } from 'drizzle-orm';
-import { hash, verify } from '@node-rs/argon2';
+import { eq } from 'drizzle-orm';
 
-// --- AUTH CORE (LOCAL) ---
+// --- AUTH CORE (Firebase) ---
 
-export async function login(username: string, password: string) {
+// Called by login page after client-side Firebase signInWithEmailAndPassword
+export async function loginWithFirebaseToken(idToken: string) {
   try {
-    const user = await db.query.users.findFirst({ where: eq(users.username, username) });
-    if (!user) return { success: false, error: 'Invalid username or password.' };
-    if (!user.isActive) return { success: false, error: 'Account is disabled. Contact your administrator.' };
+    if (!adminAuth) return { success: false, error: 'Auth service unavailable.' };
 
-    const valid = await verify(user.password, password);
-    if (!valid) return { success: false, error: 'Invalid username or password.' };
+    // Verify the Firebase ID token
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const firebaseUid = decoded.uid;
 
-    // Create Lucia session
-    const session = await lucia.createSession(user.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
+    // Check the user exists in our SQLite DB with this Firebase UID
+    const dbUser = await db.query.users.findFirst({ where: eq(users.id, firebaseUid) });
+    if (!dbUser) {
+      return { success: false, error: 'Account not found. Contact your administrator.' };
+    }
+    if (!dbUser.isActive) {
+      return { success: false, error: 'Account is disabled. Contact your administrator.' };
+    }
 
-    (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+    // Store the Firebase ID token as a session cookie
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE_NAME, idToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    });
 
     // Update last login
-    await db.update(users).set({ lastLogin: new Date().toISOString() }).where(eq(users.id, user.id));
+    await db.update(users).set({ lastLogin: new Date().toISOString() }).where(eq(users.id, firebaseUid));
 
     revalidatePath('/');
     return { success: true };
   } catch (error: any) {
     console.error('LOGIN_FAILURE:', error);
-    return { success: false, error: 'Login failed. Please try again.' };
+    return { success: false, error: 'Authentication failed. Please try again.' };
   }
 }
 
+// Keep legacy login stub to avoid import errors on pages not yet updated
+export async function login(_username: string, _password: string) {
+  return { success: false, error: 'Local login is disabled. Use Firebase Authentication.' };
+}
+
 export async function logout() {
-  const { session } = await validateRequest();
-  if (session) {
-    await lucia.invalidateSession(session.id);
-  }
-  const blankCookie = lucia.createBlankSessionCookie();
-  (await cookies()).set(blankCookie.name, blankCookie.value, blankCookie.attributes);
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
   return redirect('/login');
 }
 
@@ -73,6 +92,7 @@ export const getUsers = cache(async () => {
 
 export async function upsertUser(data: any) {
   await enforcePermission('users.manage');
+  // ID should be the Firebase UID for Firebase-auth users
   const id = data.id || `USR-${Date.now()}`;
 
   const existingUser = await db.query.users.findFirst({ where: eq(users.id, id) });
@@ -84,16 +104,12 @@ export async function upsertUser(data: any) {
       isActive: data.isActive ?? true,
     };
     if (data.username) updateData.username = data.username;
-    if (data.password) {
-      updateData.password = await hash(data.password, { memoryCost: 19456, timeCost: 2, outputLen: 32, parallelism: 1 });
-    }
     await db.update(users).set(updateData).where(eq(users.id, id));
   } else {
-    const hashedPassword = await hash(data.password || 'changeme123', { memoryCost: 19456, timeCost: 2, outputLen: 32, parallelism: 1 });
     await db.insert(users).values({
       id,
       username: data.username || data.email?.split('@')[0] || id,
-      password: hashedPassword,
+      password: '', // No local password — auth via Firebase
       fullName: data.fullName,
       email: data.email,
       isActive: data.isActive ?? true,

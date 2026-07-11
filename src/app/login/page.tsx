@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { login, registerUser } from '@/actions/auth';
+import { loginWithFirebaseToken, registerUser } from '@/actions/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { clientAuth } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShieldCheck, ArrowRight, Lock, User, Loader2,
+  ShieldCheck, ArrowRight, Lock, Loader2,
   Building2, CheckCircle2, Clock, Eye, EyeOff, Sparkles, Mail,
 } from 'lucide-react';
 
@@ -36,8 +38,8 @@ function Particle({ delay, x, size }: { delay: number; x: string; size: number }
 export default function LoginPage() {
   const [tab, setTab] = useState<Tab>('login');
 
-  // Login state
-  const [username, setUsername] = useState('');
+  // Login state — now uses email instead of username
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,13 +63,18 @@ export default function LoginPage() {
     return () => clearInterval(i);
   }, []);
 
-  /* ─── LOGIN ─── */
+  /* ─── LOGIN via Firebase ─── */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await login(username.trim(), password);
+      // 1. Sign in with Firebase client SDK
+      const credential = await signInWithEmailAndPassword(clientAuth, email.trim(), password);
+      // 2. Get Firebase ID token
+      const idToken = await credential.user.getIdToken();
+      // 3. Send to server to create session cookie
+      const res = await loginWithFirebaseToken(idToken);
       if (res.success) {
         window.location.href = '/';
       } else {
@@ -75,7 +82,14 @@ export default function LoginPage() {
         setLoading(false);
       }
     } catch (err: any) {
-      setError(err?.message || 'Connection error. Please retry.');
+      // Firebase error codes
+      if (err?.code === 'auth/user-not-found' || err?.code === 'auth/wrong-password' || err?.code === 'auth/invalid-credential') {
+        setError('Invalid email or password.');
+      } else if (err?.code === 'auth/too-many-requests') {
+        setError('Too many failed attempts. Please try again later.');
+      } else {
+        setError(err?.message || 'Connection error. Please retry.');
+      }
       setLoading(false);
     }
   };
@@ -178,20 +192,20 @@ export default function LoginPage() {
               >
                 <form onSubmit={handleLogin} className="login-form">
 
-                  {/* Username */}
+                  {/* Email */}
                   <div className="lf-group">
-                    <label className="lf-label">Username</label>
+                    <label className="lf-label">Email Address</label>
                     <div className="lf-input-wrap">
-                      <User size={16} className="lf-icon" />
+                      <Mail size={16} className="lf-icon" />
                       <input
-                        id="login-username"
-                        type="text"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
+                        id="login-email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
                         required
                         className="lf-input"
-                        placeholder="Enter your username"
-                        autoComplete="username"
+                        placeholder="you@hotel.com"
+                        autoComplete="email"
                       />
                     </div>
                   </div>

@@ -1,70 +1,59 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { lucia } from "./auth";
+import { adminAuth } from "./firebase-admin";
 import { db } from "./db";
 import { users, userRoles, rolePermissions, permissions, roles } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
-export const validateRequest = cache(async () => {
-  let sessionId: string | null = null;
-  try {
-    sessionId = (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
-  } catch {
-    // During static generation or script runs
-    sessionId = null;
-  }
+const SESSION_COOKIE = 'hotel_session';
 
-  if (!sessionId) {
+// ─── Session Validation ──────────────────────────────────────────────────────
+export const validateRequest = cache(async () => {
+  let token: string | null = null;
+  try {
+    token = (await cookies()).get(SESSION_COOKIE)?.value ?? null;
+  } catch {
     return { user: null, session: null };
   }
 
-  try {
-    const { user: luciaUser, session } = await lucia.validateSession(sessionId);
-    if (!luciaUser || !session) return { user: null, session: null };
+  if (!token) return { user: null, session: null };
 
-    // Load full user from DB
+  try {
+    // Verify Firebase ID token
+    if (!adminAuth) return { user: null, session: null };
+    const decoded = await adminAuth.verifyIdToken(token);
+    const firebaseUid = decoded.uid;
+
+    // Look up user in SQLite by Firebase UID
     const dbUser = await db.query.users.findFirst({
-      where: eq(users.id, luciaUser.id),
+      where: eq(users.id, firebaseUid),
     });
 
     if (!dbUser || !dbUser.isActive) return { user: null, session: null };
 
-    // Load user's roles
+    // Load roles
     const userRoleRows = await db.select({ roleId: userRoles.roleId })
       .from(userRoles)
       .where(eq(userRoles.userId, dbUser.id));
     const roleIds = userRoleRows.map(r => r.roleId);
 
-    // Load permissions for those roles
+    // Load permissions
     let permCodes: string[] = [];
-    if (roleIds.length > 0) {
-      for (const roleId of roleIds) {
-        const rp = await db.select({ permissionId: rolePermissions.permissionId })
-          .from(rolePermissions)
-          .where(eq(rolePermissions.roleId, roleId));
-        const permIds = rp.map(r => r.permissionId);
-        if (permIds.length > 0) {
-          for (const permId of permIds) {
-            const perm = await db.query.permissions.findFirst({ where: eq(permissions.id, permId) });
-            if (perm) permCodes.push(perm.code);
-          }
-        }
+    for (const roleId of roleIds) {
+      const rp = await db.select({ permissionId: rolePermissions.permissionId })
+        .from(rolePermissions)
+        .where(eq(rolePermissions.roleId, roleId));
+      for (const { permissionId } of rp) {
+        const perm = await db.query.permissions.findFirst({ where: eq(permissions.id, permissionId) });
+        if (perm) permCodes.push(perm.code);
       }
     }
 
-    // Resolve role names
+    // Load role names
     const resolvedRoles: string[] = [];
     for (const roleId of roleIds) {
       const role = await db.query.roles.findFirst({ where: eq(roles.id, roleId) });
       if (role) resolvedRoles.push(role.name);
-    }
-
-    // Session cookie refresh
-    if (session.fresh) {
-      const sessionCookie = lucia.createSessionCookie(session.id);
-      try {
-        (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-      } catch { /* ignore */ }
     }
 
     return {
@@ -72,11 +61,11 @@ export const validateRequest = cache(async () => {
         id: dbUser.id,
         username: dbUser.username,
         fullName: dbUser.fullName || dbUser.username,
-        email: dbUser.email || '',
+        email: dbUser.email || decoded.email || '',
         permissions: permCodes,
         roles: resolvedRoles,
       },
-      session,
+      session: { id: token, fresh: false },
     };
   } catch (error) {
     console.error('[session] validateRequest error:', error);
@@ -84,7 +73,7 @@ export const validateRequest = cache(async () => {
   }
 });
 
-// Permission Guard Utility
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 export async function checkPermission(permissionCode: string): Promise<boolean> {
   const { user } = await validateRequest();
   if (!user) return false;
@@ -92,10 +81,12 @@ export async function checkPermission(permissionCode: string): Promise<boolean> 
   return user.permissions.includes(permissionCode);
 }
 
-// Throws an error if the user lacks the required permission
 export async function enforcePermission(permissionCode: string): Promise<void> {
   const hasPermission = await checkPermission(permissionCode);
   if (!hasPermission) {
     throw new Error(`UNAUTHORIZED: Missing required clearance [${permissionCode}]`);
   }
 }
+
+// ─── Cookie helpers (called from auth actions) ────────────────────────────────
+export const SESSION_COOKIE_NAME = SESSION_COOKIE;
