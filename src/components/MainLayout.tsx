@@ -12,9 +12,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { usePathname } from 'next/navigation';
 import { ProfessionalConfirm } from './ProfessionalConfirm';
 
-import { User as LuciaUser } from 'lucia';
+import { User as DBUser } from '@/drizzle/schema';
 
-export default function MainLayout({ children, config, businessDate, user }: { children: React.ReactNode, config: any, businessDate: string, user: (LuciaUser & { roles: string[], permissions: string[] }) | null }) {
+export default function MainLayout({ children, config, businessDate, user }: { children: React.ReactNode, config: any, businessDate: string, user: (DBUser & { roles: string[], permissions: string[] }) | null }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);

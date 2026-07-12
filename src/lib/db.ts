@@ -1,9 +1,9 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import * as schema from '@/drizzle/schema';
-import path from 'path';
+import { adminFirestore } from './firebase-admin';
 
-// Robust path resolution for reliable execution in all environments
-const dbPath = path.join(process.cwd(), 'data/sqlite.db');
-const sqlite = new Database(dbPath);
-export const db = drizzle(sqlite, { schema });
+if (!adminFirestore) {
+  console.warn("Firestore is not initialized. Database operations will fail.");
+}
+
+// Export the firestore instance as db. 
+// Note: All queries must be rewritten to use Firestore syntax (e.g. db.collection('...').get())
+export const db = adminFirestore as FirebaseFirestore.Firestore;

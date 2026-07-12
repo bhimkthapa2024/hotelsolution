@@ -2,12 +2,10 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { adminAuth } from "./firebase-admin";
 import { db } from "./db";
-import { users, userRoles, rolePermissions, permissions, roles } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { User, Role } from "@/drizzle/schema";
 
 const SESSION_COOKIE = 'hotel_session';
 
-// ─── Session Validation ──────────────────────────────────────────────────────
 export const validateRequest = cache(async () => {
   let token: string | null = null;
   try {
@@ -19,41 +17,29 @@ export const validateRequest = cache(async () => {
   if (!token) return { user: null, session: null };
 
   try {
-    // Verify Firebase ID token
     if (!adminAuth) return { user: null, session: null };
     const decoded = await adminAuth.verifyIdToken(token);
     const firebaseUid = decoded.uid;
 
-    // Look up user in SQLite by Firebase UID
-    const dbUser = await db.query.users.findFirst({
-      where: eq(users.id, firebaseUid),
-    });
+    const userDoc = await db.collection('users').doc(firebaseUid).get();
+    if (!userDoc.exists) return { user: null, session: null };
 
-    if (!dbUser || !dbUser.isActive) return { user: null, session: null };
+    const dbUser = userDoc.data() as User;
+    if (!dbUser.isActive) return { user: null, session: null };
 
-    // Load roles
-    const userRoleRows = await db.select({ roleId: userRoles.roleId })
-      .from(userRoles)
-      .where(eq(userRoles.userId, dbUser.id));
-    const roleIds = userRoleRows.map(r => r.roleId);
-
-    // Load permissions
+    const roleIds = dbUser.roles || [];
     let permCodes: string[] = [];
-    for (const roleId of roleIds) {
-      const rp = await db.select({ permissionId: rolePermissions.permissionId })
-        .from(rolePermissions)
-        .where(eq(rolePermissions.roleId, roleId));
-      for (const { permissionId } of rp) {
-        const perm = await db.query.permissions.findFirst({ where: eq(permissions.id, permissionId) });
-        if (perm) permCodes.push(perm.code);
-      }
-    }
-
-    // Load role names
     const resolvedRoles: string[] = [];
+
     for (const roleId of roleIds) {
-      const role = await db.query.roles.findFirst({ where: eq(roles.id, roleId) });
-      if (role) resolvedRoles.push(role.name);
+      const roleDoc = await db.collection('roles').doc(roleId).get();
+      if (roleDoc.exists) {
+        const roleData = roleDoc.data() as Role;
+        resolvedRoles.push(roleData.name);
+        if (roleData.permissions) {
+          permCodes.push(...roleData.permissions);
+        }
+      }
     }
 
     return {
@@ -73,7 +59,6 @@ export const validateRequest = cache(async () => {
   }
 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 export async function checkPermission(permissionCode: string): Promise<boolean> {
   const { user } = await validateRequest();
   if (!user) return false;
@@ -88,5 +73,4 @@ export async function enforcePermission(permissionCode: string): Promise<void> {
   }
 }
 
-// ─── Cookie helpers (called from auth actions) ────────────────────────────────
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
