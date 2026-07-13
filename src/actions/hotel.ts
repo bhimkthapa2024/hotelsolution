@@ -780,7 +780,7 @@ export async function getGuestDatabase() {
 // ─── LEDGER ───────────────────────────────────────────────────────────────────
 
 export async function getLedgerEntries(accountId: string) {
-  const snap = await db.collection('ledgerEntries').where('accountId', '==', accountId).orderBy('date', 'asc').get();
+  const snap = await db.collection('ledgerEntries').where('accountId', '==', accountId).get();
   return serialize(snap.docs.map(d => d.data()));
 }
 
