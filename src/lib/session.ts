@@ -53,8 +53,10 @@ export const validateRequest = cache(async () => {
       },
       session: { id: token, fresh: false },
     };
-  } catch (error) {
-    console.error('[session] validateRequest error:', error);
+  } catch (error: any) {
+    if (error?.code !== 'auth/id-token-expired') {
+      console.error('[session] validateRequest error:', error);
+    }
     return { user: null, session: null };
   }
 });
