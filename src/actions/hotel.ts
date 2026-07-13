@@ -208,8 +208,22 @@ export async function getPeriodBalances(from: string, to: string) {
 }
 
 export async function getCashFlowReport(from: string, to: string) {
-  const allAccounts = await getAccounts();
-  const cashAccounts = allAccounts.filter(a => a.category === 'CASH & EQUIVALENTS');
+  const [allAccounts, cfg] = await Promise.all([getAccounts(), getConfig()]);
+  
+  const paymentModeAccIds = new Set<string>();
+  if (cfg?.paymentModes) {
+    cfg.paymentModes.forEach((pm: any) => {
+       if (pm.accountId) paymentModeAccIds.add(pm.accountId);
+       else if (pm.account) paymentModeAccIds.add(pm.account);
+    });
+  }
+
+  const cashAccounts = allAccounts.filter(a => 
+      a.category === 'CASH & EQUIVALENTS' || 
+      paymentModeAccIds.has(a.id) ||
+      (a.type === 'ASSET' && (a.name.toUpperCase().includes('CASH') || a.name.toUpperCase().includes('BANK') || a.name.toUpperCase().includes('PETTY')))
+  );
+  
   const cashAccountIds = cashAccounts.map(a => a.id);
 
   if (cashAccountIds.length === 0) {
@@ -219,7 +233,7 @@ export async function getCashFlowReport(from: string, to: string) {
   const snap = await db.collection('ledgerEntries').where('accountId', 'in', cashAccountIds).get();
   const allEntries = snap.docs.map(d => d.data() as LedgerEntry);
 
-  const beforeEntries = allEntries.filter(e => e.date <= from);
+  const beforeEntries = allEntries.filter(e => e.date < from);
   const periodEntries = allEntries.filter(e => e.date >= from && e.date <= to);
 
   const openingBalance = beforeEntries.reduce((s, e) => s + ((e.debit || 0) - (e.credit || 0)), 0);

@@ -134,12 +134,20 @@ export default function ReportsClient({
             setCashFlow(cf);
         }
         else if (activeTab === 'SUNDRY_DEBTORS') {
-            const dData = await getDebtors();
+            const [dData, a] = await Promise.all([
+               getDebtors(),
+               getPeriodBalances(dateRange.from, dateRange.to)
+            ]);
             setDebtors(dData || []);
+            setAccounts(a);
         }
         else if (activeTab === 'SUNDRY_CREDITORS') {
-            const supData = await getSuppliers();
+            const [supData, a] = await Promise.all([
+               getSuppliers(),
+               getPeriodBalances(dateRange.from, dateRange.to)
+            ]);
             setSuppliers(supData || []);
+            setAccounts(a);
         }
         else if (activeTab === 'EXECUTIVE_DASHBOARD' || activeTab === 'SALES_CONTRIBUTION' || activeTab === 'SPA_ANALYTICS') {
             const [s, pSales, a, pAcc] = await Promise.all([
