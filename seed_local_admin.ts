@@ -3,11 +3,7 @@
  * Creates tables and seeds the initial admin user into local SQLite.
  * Run: npx tsx seed_local_admin.ts
  */
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import * as schema from './src/drizzle/schema';
-import { users, roles, permissions, userRoles, rolePermissions } from './src/drizzle/schema';
-import { eq } from 'drizzle-orm';
 import { hash } from '@node-rs/argon2';
 import path from 'path';
 import fs from 'fs';
@@ -16,7 +12,6 @@ const dbPath = path.join(process.cwd(), 'data/sqlite.db');
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const sqlite = new Database(dbPath);
-const db = drizzle(sqlite, { schema });
 
 // Create all tables from schema (if not exists)
 sqlite.exec(`
